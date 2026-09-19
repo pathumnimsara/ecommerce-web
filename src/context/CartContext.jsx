@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState } from "react";
 
 const CartContext = createContext();
@@ -30,11 +29,45 @@ export function CartProvider({ children }) {
     });
   };
 
+  // Increase quantity
+  const increaseQuantity = (productId) => {
+    setCartItems((currentItems) =>
+      currentItems.map((item) =>
+        item.id === productId
+          ? { ...item, quantity: item.quantity + 1 }
+          : item
+      )
+    );
+  };
+
+  // Decrease quantity
+  const decreaseQuantity = (productId) => {
+    setCartItems((currentItems) =>
+      currentItems
+        .map((item) =>
+          item.id === productId
+            ? { ...item, quantity: item.quantity - 1 }
+            : item
+        )
+        .filter((item) => item.quantity > 0)
+    );
+  };
+
+  // Remove item
+  const removeFromCart = (productId) => {
+    setCartItems((currentItems) =>
+      currentItems.filter((item) => item.id !== productId)
+    );
+  };
+
   return (
     <CartContext.Provider
       value={{
         cartItems,
         addToCart,
+        increaseQuantity,
+        decreaseQuantity,
+        removeFromCart,
       }}
     >
       {children}

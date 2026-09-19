@@ -1,7 +1,12 @@
 import { useCart } from "../context/CartContext";
 
 function Cart() {
-  const { cartItems } = useCart();
+  const {
+    cartItems,
+    increaseQuantity,
+    decreaseQuantity,
+    removeFromCart,
+  } = useCart();
 
   const subtotal = cartItems.reduce(
     (total, item) => total + item.price * item.quantity,
@@ -14,10 +19,14 @@ function Cart() {
   return (
     <main className="py-12">
       <div className="max-w-6xl mx-auto px-6">
-        <h1 className="text-3xl font-bold mb-8">Shopping Cart</h1>
+        <h1 className="text-3xl font-bold mb-8">
+          Shopping Cart
+        </h1>
 
         {cartItems.length === 0 ? (
-          <p className="text-gray-600">Your cart is empty.</p>
+          <p className="text-gray-600">
+            Your cart is empty.
+          </p>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
@@ -26,21 +35,54 @@ function Cart() {
               {cartItems.map((item) => (
                 <div
                   key={item.id}
-                  className="border rounded-xl p-5 flex justify-between items-center"
+                  className="border rounded-xl p-5"
                 >
-                  <div>
-                    <h2 className="text-lg font-semibold">
-                      {item.name}
-                    </h2>
+                  <div className="flex justify-between items-center">
 
-                    <p className="text-gray-500">
-                      ${item.price} × {item.quantity}
+                    <div>
+                      <h2 className="text-lg font-semibold">
+                        {item.name}
+                      </h2>
+
+                      <p className="text-gray-500">
+                        ${item.price.toFixed(2)}
+                      </p>
+                    </div>
+
+                    <p className="font-bold">
+                      ${(item.price * item.quantity).toFixed(2)}
                     </p>
                   </div>
 
-                  <p className="font-bold">
-                    ${(item.price * item.quantity).toFixed(2)}
-                  </p>
+                  {/* Quantity Controls */}
+                  <div className="flex items-center gap-3 mt-5">
+
+                    <button
+                      onClick={() => decreaseQuantity(item.id)}
+                      className="w-8 h-8 border rounded-lg hover:bg-gray-100"
+                    >
+                      -
+                    </button>
+
+                    <span className="font-semibold">
+                      {item.quantity}
+                    </span>
+
+                    <button
+                      onClick={() => increaseQuantity(item.id)}
+                      className="w-8 h-8 border rounded-lg hover:bg-gray-100"
+                    >
+                      +
+                    </button>
+
+                    <button
+                      onClick={() => removeFromCart(item.id)}
+                      className="ml-4 text-red-600 hover:underline"
+                    >
+                      Remove
+                    </button>
+
+                  </div>
                 </div>
               ))}
             </div>
