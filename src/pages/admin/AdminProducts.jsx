@@ -29,6 +29,7 @@ function AdminProducts() {
   ]);
 
   const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState(null);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -56,9 +57,10 @@ function AdminProducts() {
     }
 
     const newProduct = {
-      id: products.length > 0
-        ? Math.max(...products.map((product) => product.id)) + 1
-        : 1,
+      id:
+        products.length > 0
+          ? Math.max(...products.map((product) => product.id)) + 1
+          : 1,
       name: formData.name,
       price: Number(formData.price),
       category: formData.category,
@@ -66,12 +68,57 @@ function AdminProducts() {
 
     setProducts([...products, newProduct]);
 
+    resetForm();
+  };
+
+  const handleEdit = (product) => {
+    setEditingId(product.id);
+
+    setFormData({
+      name: product.name,
+      price: product.price,
+      category: product.category,
+    });
+
+    setShowForm(true);
+  };
+
+  const handleUpdateProduct = (e) => {
+    e.preventDefault();
+
+    if (
+      !formData.name ||
+      !formData.price ||
+      !formData.category
+    ) {
+      alert("Please fill in all fields.");
+      return;
+    }
+
+    setProducts(
+      products.map((product) =>
+        product.id === editingId
+          ? {
+              ...product,
+              name: formData.name,
+              price: Number(formData.price),
+              category: formData.category,
+            }
+          : product
+      )
+    );
+
+    resetForm();
+  };
+
+  const resetForm = () => {
     setFormData({
       name: "",
       price: "",
       category: "Electronics",
     });
 
+    setEditingId(null);
     setShowForm(false);
   };
 
@@ -102,7 +149,13 @@ function AdminProducts() {
           </div>
 
           <button
-            onClick={() => setShowForm(!showForm)}
+            onClick={() => {
+              if (showForm) {
+                resetForm();
+              } else {
+                setShowForm(true);
+              }
+            }}
             className="bg-gray-900 text-white px-5 py-3 rounded-lg hover:bg-gray-700"
           >
             {showForm ? "Close Form" : "+ Add Product"}
@@ -112,11 +165,17 @@ function AdminProducts() {
         {showForm && (
           <div className="bg-white border rounded-xl p-6 mb-8">
             <h2 className="text-xl font-bold mb-6">
-              Add New Product
+              {editingId
+                ? "Edit Product"
+                : "Add New Product"}
             </h2>
 
             <form
-              onSubmit={handleAddProduct}
+              onSubmit={
+                editingId
+                  ? handleUpdateProduct
+                  : handleAddProduct
+              }
               className="grid grid-cols-1 md:grid-cols-3 gap-5"
             >
               <div>
@@ -184,12 +243,22 @@ function AdminProducts() {
                 </select>
               </div>
 
-              <div className="md:col-span-3">
+              <div className="md:col-span-3 flex gap-3">
                 <button
                   type="submit"
                   className="bg-gray-900 text-white px-6 py-3 rounded-lg hover:bg-gray-700"
                 >
-                  Add Product
+                  {editingId
+                    ? "Update Product"
+                    : "Add Product"}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={resetForm}
+                  className="border border-gray-900 px-6 py-3 rounded-lg hover:bg-gray-100"
+                >
+                  Cancel
                 </button>
               </div>
             </form>
@@ -247,7 +316,12 @@ function AdminProducts() {
 
                     <td className="px-6 py-4">
                       <div className="flex gap-3">
-                        <button className="text-blue-600 hover:underline">
+                        <button
+                          onClick={() =>
+                            handleEdit(product)
+                          }
+                          className="text-blue-600 hover:underline"
+                        >
                           Edit
                         </button>
 
