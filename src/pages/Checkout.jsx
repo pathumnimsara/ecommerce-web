@@ -1,9 +1,10 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useCart } from "../context/CartContext";
 
 function Checkout() {
   const { cartItems } = useCart();
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -53,9 +54,7 @@ function Checkout() {
       bank: "Bank Transfer",
     };
 
-    alert(
-      `Order placed successfully!\nPayment Method: ${paymentNames[paymentMethod]}`
-    );
+    navigate("/order-success");
   };
 
   if (cartItems.length === 0) {
