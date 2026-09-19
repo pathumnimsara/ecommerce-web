@@ -1,4 +1,6 @@
 
+import { Link } from "react-router-dom";
+
 function Products() {
   const products = [
     {
@@ -68,6 +70,7 @@ function Products() {
 
         {/* Products Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+
           {products.map((product) => (
             <div
               key={product.id}
@@ -92,6 +95,14 @@ function Products() {
                   {product.name}
                 </h2>
 
+                {/* View Details */}
+                <Link
+                  to={`/products/${product.id}`}
+                  className="inline-block mt-3 text-sm font-semibold hover:underline"
+                >
+                  View Details →
+                </Link>
+
                 <p className="text-xl font-bold mt-3">
                   ${product.price}
                 </p>
@@ -105,8 +116,8 @@ function Products() {
               </div>
             </div>
           ))}
-        </div>
 
+        </div>
       </div>
     </main>
   );
