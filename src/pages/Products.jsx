@@ -7,6 +7,8 @@ function Products() {
 
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
+  const [sortBy, setSortBy] = useState("default");
+  
 
   const products = [
     {
@@ -68,7 +70,8 @@ function Products() {
     "Beauty",
   ];
 
-  const filteredProducts = products.filter((product) => {
+  const filteredProducts = products
+  .filter((product) => {
     const matchesSearch = product.name
       .toLowerCase()
       .includes(search.toLowerCase());
@@ -77,6 +80,25 @@ function Products() {
       category === "All" || product.category === category;
 
     return matchesSearch && matchesCategory;
+  })
+  .sort((a, b) => {
+    if (sortBy === "price-low") {
+      return a.price - b.price;
+    }
+
+    if (sortBy === "price-high") {
+      return b.price - a.price;
+    }
+
+    if (sortBy === "name-az") {
+      return a.name.localeCompare(b.name);
+    }
+
+    if (sortBy === "name-za") {
+      return b.name.localeCompare(a.name);
+    }
+
+    return 0;
   });
 
   return (
@@ -122,6 +144,17 @@ function Products() {
               </option>
             ))}
           </select>
+          <select
+  value={sortBy}
+  onChange={(e) => setSortBy(e.target.value)}
+  className="border rounded-lg px-4 py-3 bg-white"
+>
+  <option value="default">Sort By</option>
+  <option value="price-low">Price: Low to High</option>
+  <option value="price-high">Price: High to Low</option>
+  <option value="name-az">Name: A to Z</option>
+  <option value="name-za">Name: Z to A</option>
+</select>
 
         </div>
 
