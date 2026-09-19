@@ -1,176 +1,190 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
-import { products } from "../utils/products";
+import api from "../services/api";
 
 function Products() {
   const { addToCart } = useCart();
 
-  const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("All");
-  const [sortBy, setSortBy] = useState("default");
-  
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [sortOption, setSortOption] = useState("");
 
+  // Fetch products from backend
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await api.get("/products");
+        setProducts(response.data);
+      } catch (error) {
+        console.error("Failed to load products:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  // Get categories
   const categories = [
     "All",
-    "Electronics",
-    "Accessories",
-    "Fashion",
-    "Home & Living",
-    "Beauty",
+    ...new Set(products.map((product) => product.category)),
   ];
 
-  const filteredProducts = products
-  .filter((product) => {
+  // Filter products
+  let filteredProducts = products.filter((product) => {
     const matchesSearch = product.name
       .toLowerCase()
-      .includes(search.toLowerCase());
+      .includes(searchTerm.toLowerCase());
 
     const matchesCategory =
-      category === "All" || product.category === category;
+      selectedCategory === "All" ||
+      product.category === selectedCategory;
 
     return matchesSearch && matchesCategory;
-  })
-  .sort((a, b) => {
-    if (sortBy === "price-low") {
-      return a.price - b.price;
-    }
-
-    if (sortBy === "price-high") {
-      return b.price - a.price;
-    }
-
-    if (sortBy === "name-az") {
-      return a.name.localeCompare(b.name);
-    }
-
-    if (sortBy === "name-za") {
-      return b.name.localeCompare(a.name);
-    }
-
-    return 0;
   });
 
+  // Sort products
+  if (sortOption === "price-low") {
+    filteredProducts.sort((a, b) => a.price - b.price);
+  }
+
+  if (sortOption === "price-high") {
+    filteredProducts.sort((a, b) => b.price - a.price);
+  }
+
+  if (sortOption === "name") {
+    filteredProducts.sort((a, b) => a.name.localeCompare(b.name));
+  }
+
   return (
-    <main className="py-12">
-      <div className="max-w-7xl mx-auto px-6">
+    <div className="bg-gray-50 min-h-screen py-10">
+      <div className="max-w-7xl mx-auto px-4">
 
         {/* Page Header */}
-
-        <div className="text-center mb-10">
-          <h1 className="text-4xl font-bold">
-            All Products
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-800">
+            Our Products
           </h1>
 
-          <p className="text-gray-600 mt-3">
-            Explore our collection of quality products
+          <p className="text-gray-500 mt-2">
+            Find the perfect products for you
           </p>
         </div>
 
-        {/* Search & Filter */}
+        {/* Filters */}
+        <div className="bg-white p-5 rounded-xl shadow-sm mb-8">
 
-        <div className="flex flex-col md:flex-row gap-4 mb-10">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-          {/* Search */}
+            {/* Search */}
+            <input
+              type="text"
+              placeholder="Search products..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
 
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search products..."
-            className="flex-1 border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gray-300"
-          />
+            {/* Category */}
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {categories.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
 
-          {/* Category */}
+            {/* Sort */}
+            <select
+              value={sortOption}
+              onChange={(e) => setSortOption(e.target.value)}
+              className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Sort By</option>
+              <option value="price-low">Price: Low to High</option>
+              <option value="price-high">Price: High to Low</option>
+              <option value="name">Name: A-Z</option>
+            </select>
 
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="border rounded-lg px-4 py-3 bg-white"
-          >
-            {categories.map((item) => (
-              <option key={item} value={item}>
-                {item}
-              </option>
-            ))}
-          </select>
-          <select
-  value={sortBy}
-  onChange={(e) => setSortBy(e.target.value)}
-  className="border rounded-lg px-4 py-3 bg-white"
->
-  <option value="default">Sort By</option>
-  <option value="price-low">Price: Low to High</option>
-  <option value="price-high">Price: High to Low</option>
-  <option value="name-az">Name: A to Z</option>
-  <option value="name-za">Name: Z to A</option>
-</select>
-
+          </div>
         </div>
 
-        {/* Product Count */}
-
-        <p className="text-gray-600 mb-6">
-          Showing {filteredProducts.length} product
-          {filteredProducts.length !== 1 ? "s" : ""}
-        </p>
-
-        {/* Products */}
-
-        {filteredProducts.length === 0 ? (
+        {/* Loading */}
+        {loading ? (
           <div className="text-center py-16">
-            <h2 className="text-2xl font-semibold">
+            <p className="text-gray-500 text-lg">
+              Loading products...
+            </p>
+          </div>
+        ) : filteredProducts.length === 0 ? (
+          /* No Products */
+          <div className="text-center py-16">
+            <h2 className="text-xl font-semibold text-gray-700">
               No products found
             </h2>
 
             <p className="text-gray-500 mt-2">
-              Try a different search or category.
+              Try another search or category.
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          /* Product Grid */
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
 
             {filteredProducts.map((product) => (
               <div
-                key={product.id}
-                className="border rounded-xl overflow-hidden hover:shadow-lg transition"
+                key={product._id}
+                className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-lg transition"
               >
 
                 {/* Product Image */}
+                <Link to={`/products/${product._id}`}>
+                  <div className="h-52 bg-gray-100 flex items-center justify-center">
 
-                <div className="h-52 bg-gray-200 flex items-center justify-center">
-                  <span className="text-gray-500">
-                    Product Image
-                  </span>
-                </div>
+                    {product.image ? (
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-gray-400">
+                        No Image
+                      </span>
+                    )}
+
+                  </div>
+                </Link>
 
                 {/* Product Details */}
-
                 <div className="p-5">
 
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-blue-600 mb-1">
                     {product.category}
                   </p>
 
-                  <h2 className="text-lg font-semibold mt-1">
-                    {product.name}
-                  </h2>
-
-                  <Link
-                    to={`/products/${product.id}`}
-                    className="inline-block mt-3 text-sm font-semibold hover:underline"
-                  >
-                    View Details →
+                  <Link to={`/products/${product._id}`}>
+                    <h2 className="text-lg font-semibold text-gray-800 hover:text-blue-600">
+                      {product.name}
+                    </h2>
                   </Link>
 
-                  <p className="text-xl font-bold mt-3">
-                    ${product.price}
+                  <p className="text-xl font-bold text-gray-900 mt-3">
+                    ${Number(product.price).toFixed(2)}
                   </p>
 
                   <button
                     onClick={() => addToCart(product)}
-                    className="w-full mt-4 bg-gray-900 text-white py-2 rounded-lg hover:bg-gray-700"
+                    className="w-full mt-4 bg-black text-white py-2 rounded-lg hover:bg-gray-800 transition"
                   >
                     Add to Cart
                   </button>
@@ -183,7 +197,7 @@ function Products() {
         )}
 
       </div>
-    </main>
+    </div>
   );
 }
 

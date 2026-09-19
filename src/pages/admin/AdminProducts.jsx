@@ -1,42 +1,39 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import api from "../../services/api";
 
 function AdminProducts() {
-  const [products, setProducts] = useState([
-    {
-      id: 1,
-      name: "Wireless Headphones",
-      price: 59.99,
-      category: "Electronics",
-    },
-    {
-      id: 2,
-      name: "Smart Watch",
-      price: 79.99,
-      category: "Electronics",
-    },
-    {
-      id: 3,
-      name: "Laptop Backpack",
-      price: 39.99,
-      category: "Accessories",
-    },
-    {
-      id: 4,
-      name: "Casual T-Shirt",
-      price: 24.99,
-      category: "Fashion",
-    },
-  ]);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState(null);
+  const [editingProduct, setEditingProduct] = useState(null);
 
   const [formData, setFormData] = useState({
     name: "",
     price: "",
-    category: "Electronics",
+    category: "",
+    description: "",
+    image: "",
+    stock: "",
   });
 
+  // Load products
+  const fetchProducts = async () => {
+    try {
+      const response = await api.get("/products");
+      setProducts(response.data);
+    } catch (error) {
+      console.error("Failed to load products:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  // Form input
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -44,313 +41,337 @@ function AdminProducts() {
     });
   };
 
-  const handleAddProduct = (e) => {
-    e.preventDefault();
-
-    if (
-      !formData.name ||
-      !formData.price ||
-      !formData.category
-    ) {
-      alert("Please fill in all fields.");
-      return;
-    }
-
-    const newProduct = {
-      id:
-        products.length > 0
-          ? Math.max(...products.map((product) => product.id)) + 1
-          : 1,
-      name: formData.name,
-      price: Number(formData.price),
-      category: formData.category,
-    };
-
-    setProducts([...products, newProduct]);
-
-    resetForm();
-  };
-
-  const handleEdit = (product) => {
-    setEditingId(product.id);
+  // Open add form
+  const handleAdd = () => {
+    setEditingProduct(null);
 
     setFormData({
-      name: product.name,
-      price: product.price,
-      category: product.category,
+      name: "",
+      price: "",
+      category: "",
+      description: "",
+      image: "",
+      stock: "",
     });
 
     setShowForm(true);
   };
 
-  const handleUpdateProduct = (e) => {
-    e.preventDefault();
+  // Open edit form
+  const handleEdit = (product) => {
+    setEditingProduct(product);
 
-    if (
-      !formData.name ||
-      !formData.price ||
-      !formData.category
-    ) {
-      alert("Please fill in all fields.");
-      return;
-    }
-
-    setProducts(
-      products.map((product) =>
-        product.id === editingId
-          ? {
-              ...product,
-              name: formData.name,
-              price: Number(formData.price),
-              category: formData.category,
-            }
-          : product
-      )
-    );
-
-    resetForm();
-  };
-
-  const resetForm = () => {
     setFormData({
-      name: "",
-      price: "",
-      category: "Electronics",
+      name: product.name,
+      price: product.price,
+      category: product.category,
+      description: product.description || "",
+      image: product.image || "",
+      stock: product.stock,
     });
 
-    setEditingId(null);
-    setShowForm(false);
+    setShowForm(true);
   };
 
-  const handleDelete = (id) => {
+  // Save product
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const productData = {
+        name: formData.name,
+        price: Number(formData.price),
+        category: formData.category,
+        description: formData.description,
+        image: formData.image,
+        stock: Number(formData.stock),
+      };
+
+      if (editingProduct) {
+        await api.put(
+          `/products/${editingProduct._id}`,
+          productData
+        );
+      } else {
+        await api.post("/products", productData);
+      }
+
+      setShowForm(false);
+      setEditingProduct(null);
+
+      await fetchProducts();
+    } catch (error) {
+      console.error("Failed to save product:", error);
+      alert("Failed to save product");
+    }
+  };
+
+  // Delete product
+  const handleDelete = async (id) => {
     const confirmed = window.confirm(
       "Are you sure you want to delete this product?"
     );
 
-    if (confirmed) {
-      setProducts(
-        products.filter((product) => product.id !== id)
-      );
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await api.delete(`/products/${id}`);
+
+      await fetchProducts();
+    } catch (error) {
+      console.error("Failed to delete product:", error);
+      alert("Failed to delete product");
     }
   };
 
   return (
-    <main className="py-12 bg-gray-50 min-h-screen">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+    <div className="bg-gray-50 min-h-screen py-10">
+      <div className="max-w-7xl mx-auto px-4">
+
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+
           <div>
-            <h1 className="text-3xl font-bold">
+            <h1 className="text-3xl font-bold text-gray-800">
               Product Management
             </h1>
 
-            <p className="text-gray-600 mt-2">
-              Manage products in your store
+            <p className="text-gray-500 mt-1">
+              Manage your store products
             </p>
           </div>
 
           <button
-            onClick={() => {
-              if (showForm) {
-                resetForm();
-              } else {
-                setShowForm(true);
-              }
-            }}
-            className="bg-gray-900 text-white px-5 py-3 rounded-lg hover:bg-gray-700"
+            onClick={handleAdd}
+            className="bg-black text-white px-5 py-3 rounded-lg hover:bg-gray-800"
           >
-            {showForm ? "Close Form" : "+ Add Product"}
+            + Add Product
           </button>
+
         </div>
 
+        {/* Add/Edit Form */}
         {showForm && (
-          <div className="bg-white border rounded-xl p-6 mb-8">
-            <h2 className="text-xl font-bold mb-6">
-              {editingId
-                ? "Edit Product"
-                : "Add New Product"}
+          <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
+
+            <h2 className="text-xl font-semibold mb-5">
+              {editingProduct ? "Edit Product" : "Add Product"}
             </h2>
 
             <form
-              onSubmit={
-                editingId
-                  ? handleUpdateProduct
-                  : handleAddProduct
-              }
-              className="grid grid-cols-1 md:grid-cols-3 gap-5"
+              onSubmit={handleSubmit}
+              className="grid grid-cols-1 md:grid-cols-2 gap-4"
             >
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Product Name
-                </label>
 
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  placeholder="Enter product name"
-                  className="w-full border rounded-lg px-4 py-3"
-                />
-              </div>
+              <input
+                type="text"
+                name="name"
+                placeholder="Product name"
+                value={formData.name}
+                onChange={handleChange}
+                required
+                className="border rounded-lg px-4 py-3"
+              />
 
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Price
-                </label>
+              <input
+                type="number"
+                name="price"
+                placeholder="Price"
+                value={formData.price}
+                onChange={handleChange}
+                min="0"
+                step="0.01"
+                required
+                className="border rounded-lg px-4 py-3"
+              />
 
-                <input
-                  type="number"
-                  name="price"
-                  value={formData.price}
-                  onChange={handleChange}
-                  placeholder="Enter price"
-                  min="0"
-                  step="0.01"
-                  className="w-full border rounded-lg px-4 py-3"
-                />
-              </div>
+              <input
+                type="text"
+                name="category"
+                placeholder="Category"
+                value={formData.category}
+                onChange={handleChange}
+                required
+                className="border rounded-lg px-4 py-3"
+              />
 
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Category
-                </label>
+              <input
+                type="number"
+                name="stock"
+                placeholder="Stock"
+                value={formData.stock}
+                onChange={handleChange}
+                min="0"
+                required
+                className="border rounded-lg px-4 py-3"
+              />
 
-                <select
-                  name="category"
-                  value={formData.category}
-                  onChange={handleChange}
-                  className="w-full border rounded-lg px-4 py-3 bg-white"
-                >
-                  <option value="Electronics">
-                    Electronics
-                  </option>
+              <input
+                type="text"
+                name="image"
+                placeholder="Image URL"
+                value={formData.image}
+                onChange={handleChange}
+                className="border rounded-lg px-4 py-3 md:col-span-2"
+              />
 
-                  <option value="Accessories">
-                    Accessories
-                  </option>
+              <textarea
+                name="description"
+                placeholder="Product description"
+                value={formData.description}
+                onChange={handleChange}
+                rows="4"
+                className="border rounded-lg px-4 py-3 md:col-span-2"
+              />
 
-                  <option value="Fashion">
-                    Fashion
-                  </option>
+              <div className="flex gap-3 md:col-span-2">
 
-                  <option value="Home & Living">
-                    Home & Living
-                  </option>
-
-                  <option value="Beauty">
-                    Beauty
-                  </option>
-                </select>
-              </div>
-
-              <div className="md:col-span-3 flex gap-3">
                 <button
                   type="submit"
-                  className="bg-gray-900 text-white px-6 py-3 rounded-lg hover:bg-gray-700"
+                  className="bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800"
                 >
-                  {editingId
-                    ? "Update Product"
-                    : "Add Product"}
+                  {editingProduct ? "Update Product" : "Add Product"}
                 </button>
 
                 <button
                   type="button"
-                  onClick={resetForm}
-                  className="border border-gray-900 px-6 py-3 rounded-lg hover:bg-gray-100"
+                  onClick={() => setShowForm(false)}
+                  className="border px-6 py-3 rounded-lg hover:bg-gray-100"
                 >
                   Cancel
                 </button>
+
               </div>
+
             </form>
           </div>
         )}
 
-        <div className="bg-white border rounded-xl overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-100 border-b">
-                <tr>
-                  <th className="text-left px-6 py-4">
-                    ID
-                  </th>
-
-                  <th className="text-left px-6 py-4">
-                    Product
-                  </th>
-
-                  <th className="text-left px-6 py-4">
-                    Category
-                  </th>
-
-                  <th className="text-left px-6 py-4">
-                    Price
-                  </th>
-
-                  <th className="text-left px-6 py-4">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {products.map((product) => (
-                  <tr
-                    key={product.id}
-                    className="border-b last:border-b-0"
-                  >
-                    <td className="px-6 py-4">
-                      {product.id}
-                    </td>
-
-                    <td className="px-6 py-4 font-medium">
-                      {product.name}
-                    </td>
-
-                    <td className="px-6 py-4 text-gray-600">
-                      {product.category}
-                    </td>
-
-                    <td className="px-6 py-4">
-                      ${product.price.toFixed(2)}
-                    </td>
-
-                    <td className="px-6 py-4">
-                      <div className="flex gap-3">
-                        <button
-                          onClick={() =>
-                            handleEdit(product)
-                          }
-                          className="text-blue-600 hover:underline"
-                        >
-                          Edit
-                        </button>
-
-                        <button
-                          onClick={() =>
-                            handleDelete(product.id)
-                          }
-                          className="text-red-600 hover:underline"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        {/* Products */}
+        {loading ? (
+          <div className="text-center py-10">
+            <p className="text-gray-500">
+              Loading products...
+            </p>
           </div>
+        ) : products.length === 0 ? (
+          <div className="bg-white rounded-xl p-10 text-center">
+            <p className="text-gray-500">
+              No products found.
+            </p>
+          </div>
+        ) : (
+          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
 
-          {products.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-gray-500">
-                No products available.
-              </p>
+            <div className="overflow-x-auto">
+
+              <table className="w-full">
+
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="text-left px-6 py-4">
+                      Product
+                    </th>
+
+                    <th className="text-left px-6 py-4">
+                      Category
+                    </th>
+
+                    <th className="text-left px-6 py-4">
+                      Price
+                    </th>
+
+                    <th className="text-left px-6 py-4">
+                      Stock
+                    </th>
+
+                    <th className="text-left px-6 py-4">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+
+                <tbody>
+
+                  {products.map((product) => (
+                    <tr
+                      key={product._id}
+                      className="border-t"
+                    >
+
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+
+                          {product.image ? (
+                            <img
+                              src={product.image}
+                              alt={product.name}
+                              className="w-12 h-12 object-cover rounded-lg"
+                            />
+                          ) : (
+                            <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center text-xs text-gray-400">
+                              No image
+                            </div>
+                          )}
+
+                          <span className="font-medium">
+                            {product.name}
+                          </span>
+
+                        </div>
+                      </td>
+
+                      <td className="px-6 py-4">
+                        {product.category}
+                      </td>
+
+                      <td className="px-6 py-4">
+                        ${Number(product.price).toFixed(2)}
+                      </td>
+
+                      <td className="px-6 py-4">
+                        {product.stock}
+                      </td>
+
+                      <td className="px-6 py-4">
+
+                        <div className="flex gap-2">
+
+                          <button
+                            onClick={() => handleEdit(product)}
+                            className="px-3 py-2 border rounded-lg hover:bg-gray-100"
+                          >
+                            Edit
+                          </button>
+
+                          <button
+                            onClick={() =>
+                              handleDelete(product._id)
+                            }
+                            className="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                          >
+                            Delete
+                          </button>
+
+                        </div>
+
+                      </td>
+
+                    </tr>
+                  ))}
+
+                </tbody>
+
+              </table>
+
             </div>
-          )}
-        </div>
+          </div>
+        )}
+
       </div>
-    </main>
+    </div>
   );
 }
 
