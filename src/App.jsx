@@ -8,6 +8,7 @@ import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminProducts from "./pages/admin/AdminProducts";
 import AdminOrders from "./pages/admin/AdminOrders";
+import AdminUsers from "./pages/admin/AdminUsers";
 
 import Home from "./pages/Home";
 import Products from "./pages/Products";
@@ -44,6 +45,10 @@ function App() {
 <Route
   path="/admin/orders"
   element={<AdminOrders />}
+/>
+<Route
+  path="/admin/users"
+  element={<AdminUsers />}
 />
 
 
