@@ -1,8 +1,21 @@
 import { Link } from "react-router-dom";
+import { useState } from "react";
 import { useCart } from "../context/CartContext";
 
 function Checkout() {
   const { cartItems } = useCart();
+
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    address: "",
+    city: "",
+    postalCode: "",
+  });
+
+  const [error, setError] = useState("");
 
   const subtotal = cartItems.reduce(
     (total, item) => total + item.price * item.quantity,
@@ -12,10 +25,37 @@ function Checkout() {
   const shipping = cartItems.length > 0 ? 5 : 0;
   const total = subtotal + shipping;
 
+  // Handle input changes
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  // Validate form
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    const hasEmptyField = Object.values(formData).some(
+      (value) => value.trim() === ""
+    );
+
+    if (hasEmptyField) {
+      setError("Please fill in all fields.");
+      return;
+    }
+
+    setError("");
+    alert("Order placed successfully!");
+  };
+
+  // Empty cart
   if (cartItems.length === 0) {
     return (
       <main className="py-16">
         <div className="max-w-4xl mx-auto px-6 text-center">
+
           <h1 className="text-3xl font-bold">
             Your cart is empty
           </h1>
@@ -30,6 +70,7 @@ function Checkout() {
           >
             Browse Products
           </Link>
+
         </div>
       </main>
     );
@@ -46,12 +87,28 @@ function Checkout() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
           {/* Customer Information */}
-          <div className="lg:col-span-2 border rounded-xl p-6">
+
+          <form
+            id="checkout-form"
+            onSubmit={handleSubmit}
+            className="lg:col-span-2 border rounded-xl p-6"
+          >
+
             <h2 className="text-xl font-bold mb-6">
               Customer Information
             </h2>
 
+            {/* Error Message */}
+
+            {error && (
+              <p className="mb-5 text-red-600 bg-red-50 p-3 rounded-lg">
+                {error}
+              </p>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+              {/* First Name */}
 
               <div>
                 <label className="block text-sm font-medium mb-2">
@@ -60,10 +117,15 @@ function Checkout() {
 
                 <input
                   type="text"
+                  name="firstName"
+                  value={formData.firstName}
+                  onChange={handleChange}
                   placeholder="Enter first name"
                   className="w-full border rounded-lg px-4 py-3"
                 />
               </div>
+
+              {/* Last Name */}
 
               <div>
                 <label className="block text-sm font-medium mb-2">
@@ -72,10 +134,15 @@ function Checkout() {
 
                 <input
                   type="text"
+                  name="lastName"
+                  value={formData.lastName}
+                  onChange={handleChange}
                   placeholder="Enter last name"
                   className="w-full border rounded-lg px-4 py-3"
                 />
               </div>
+
+              {/* Email */}
 
               <div>
                 <label className="block text-sm font-medium mb-2">
@@ -84,10 +151,15 @@ function Checkout() {
 
                 <input
                   type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
                   placeholder="Enter email"
                   className="w-full border rounded-lg px-4 py-3"
                 />
               </div>
+
+              {/* Phone */}
 
               <div>
                 <label className="block text-sm font-medium mb-2">
@@ -96,10 +168,15 @@ function Checkout() {
 
                 <input
                   type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
                   placeholder="Enter phone number"
                   className="w-full border rounded-lg px-4 py-3"
                 />
               </div>
+
+              {/* Address */}
 
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium mb-2">
@@ -108,10 +185,15 @@ function Checkout() {
 
                 <input
                   type="text"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleChange}
                   placeholder="Enter delivery address"
                   className="w-full border rounded-lg px-4 py-3"
                 />
               </div>
+
+              {/* City */}
 
               <div>
                 <label className="block text-sm font-medium mb-2">
@@ -120,10 +202,15 @@ function Checkout() {
 
                 <input
                   type="text"
+                  name="city"
+                  value={formData.city}
+                  onChange={handleChange}
                   placeholder="Enter city"
                   className="w-full border rounded-lg px-4 py-3"
                 />
               </div>
+
+              {/* Postal Code */}
 
               <div>
                 <label className="block text-sm font-medium mb-2">
@@ -132,15 +219,20 @@ function Checkout() {
 
                 <input
                   type="text"
+                  name="postalCode"
+                  value={formData.postalCode}
+                  onChange={handleChange}
                   placeholder="Enter postal code"
                   className="w-full border rounded-lg px-4 py-3"
                 />
               </div>
 
             </div>
-          </div>
+
+          </form>
 
           {/* Order Summary */}
+
           <div className="border rounded-xl p-6 h-fit">
 
             <h2 className="text-xl font-bold mb-6">
@@ -148,11 +240,13 @@ function Checkout() {
             </h2>
 
             <div className="space-y-4">
+
               {cartItems.map((item) => (
                 <div
                   key={item.id}
                   className="flex justify-between"
                 >
+
                   <div>
                     <p className="font-medium">
                       {item.name}
@@ -166,9 +260,13 @@ function Checkout() {
                   <p className="font-medium">
                     ${(item.price * item.quantity).toFixed(2)}
                   </p>
+
                 </div>
               ))}
+
             </div>
+
+            {/* Totals */}
 
             <div className="border-t mt-6 pt-4 space-y-3">
 
@@ -189,7 +287,13 @@ function Checkout() {
 
             </div>
 
-            <button className="w-full mt-6 bg-gray-900 text-white py-3 rounded-lg hover:bg-gray-700">
+            {/* Place Order */}
+
+            <button
+              type="submit"
+              form="checkout-form"
+              className="w-full mt-6 bg-gray-900 text-white py-3 rounded-lg hover:bg-gray-700"
+            >
               Place Order
             </button>
 
