@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 function AdminDashboard() {
   return (
     <main className="py-12 bg-gray-50 min-h-screen">
@@ -17,37 +19,27 @@ function AdminDashboard() {
             <p className="text-gray-500 text-sm">
               Total Products
             </p>
-
-            <h2 className="text-3xl font-bold mt-2">
-              8
-            </h2>
+            <h2 className="text-3xl font-bold mt-2">8</h2>
           </div>
 
           <div className="bg-white border rounded-xl p-6">
             <p className="text-gray-500 text-sm">
               Total Orders
             </p>
-
-            <h2 className="text-3xl font-bold mt-2">
-              24
-            </h2>
+            <h2 className="text-3xl font-bold mt-2">24</h2>
           </div>
 
           <div className="bg-white border rounded-xl p-6">
             <p className="text-gray-500 text-sm">
               Total Users
             </p>
-
-            <h2 className="text-3xl font-bold mt-2">
-              156
-            </h2>
+            <h2 className="text-3xl font-bold mt-2">156</h2>
           </div>
 
           <div className="bg-white border rounded-xl p-6">
             <p className="text-gray-500 text-sm">
               Total Revenue
             </p>
-
             <h2 className="text-3xl font-bold mt-2">
               $2,450
             </h2>
@@ -61,8 +53,15 @@ function AdminDashboard() {
             </h2>
 
             <p className="text-gray-500 mt-3">
-              Order management will be added soon.
+              View and manage your customer orders.
             </p>
+
+            <Link
+              to="/admin/orders"
+              className="inline-block mt-5 bg-gray-900 text-white px-5 py-2 rounded-lg hover:bg-gray-700"
+            >
+              View Orders
+            </Link>
           </div>
 
           <div className="bg-white border rounded-xl p-6">
@@ -71,13 +70,26 @@ function AdminDashboard() {
             </h2>
 
             <div className="flex flex-wrap gap-3 mt-4">
-              <button className="bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-gray-700">
-                Add Product
-              </button>
+              <Link
+                to="/admin/products"
+                className="bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-gray-700"
+              >
+                Manage Products
+              </Link>
 
-              <button className="border border-gray-900 px-4 py-2 rounded-lg hover:bg-gray-100">
+              <Link
+                to="/admin/orders"
+                className="border border-gray-900 px-4 py-2 rounded-lg hover:bg-gray-100"
+              >
                 View Orders
-              </button>
+              </Link>
+
+              <Link
+                to="/admin/users"
+                className="border border-gray-900 px-4 py-2 rounded-lg hover:bg-gray-100"
+              >
+                Manage Users
+              </Link>
             </div>
           </div>
         </div>
