@@ -6,6 +6,7 @@ import Register from "./pages/Register";
 import OrderSuccess from "./pages/OrderSuccess";
 import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminProducts from "./pages/admin/AdminProducts";
 
 import Home from "./pages/Home";
 import Products from "./pages/Products";
@@ -35,6 +36,11 @@ function App() {
   path="/admin"
   element={<AdminDashboard />}
 />
+<Route
+  path="/admin/products"
+  element={<AdminProducts />}
+/>
+
 
         </Routes>
       </BrowserRouter>
