@@ -4,6 +4,7 @@ import Navbar from "./components/Navbar";
 import Checkout from "./pages/Checkout";
 import Register from "./pages/Register";
 import OrderSuccess from "./pages/OrderSuccess";
+import NotFound from "./pages/NotFound";
 
 import Home from "./pages/Home";
 import Products from "./pages/Products";
@@ -28,6 +29,7 @@ function App() {
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/register" element={<Register />} />
           <Route path="/order-success" element={<OrderSuccess />} />
+          <Route path="*" element={<NotFound />} />
           
         </Routes>
       </BrowserRouter>
