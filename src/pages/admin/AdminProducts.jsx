@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
 import api from "../../services/api";
 
+const authConfig = () => ({
+  headers: {
+    Authorization: `Bearer ${localStorage.getItem("token")}`,
+  },
+});
+
 function AdminProducts() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -20,7 +26,10 @@ function AdminProducts() {
   // Load products
   const fetchProducts = async () => {
     try {
-      const response = await api.get("/products");
+      const response = await api.get(
+  "/products",
+  authConfig()
+);
       setProducts(response.data);
     } catch (error) {
       console.error("Failed to load products:", error);
@@ -89,11 +98,16 @@ function AdminProducts() {
 
       if (editingProduct) {
         await api.put(
-          `/products/${editingProduct._id}`,
-          productData
-        );
+  `/products/${editingProduct._id}`,
+  productData,
+  authConfig()
+);
       } else {
-        await api.post("/products", productData);
+        await api.post(
+  "/products",
+  productData,
+  authConfig()
+);
       }
 
       setShowForm(false);
@@ -117,7 +131,10 @@ function AdminProducts() {
     }
 
     try {
-      await api.delete(`/products/${id}`);
+      await api.delete(
+  `/products/${id}`,
+  authConfig()
+);
 
       await fetchProducts();
     } catch (error) {

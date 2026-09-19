@@ -1,5 +1,6 @@
 import express from "express";
 import Product from "../models/Product.js";
+import { protect, adminOnly } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -29,7 +30,7 @@ router.get("/:id", async (req, res) => {
 });
 
 // Add product
-router.post("/", async (req, res) => {
+router.post("/", protect, adminOnly, async (req, res) => {
   try {
     const product = new Product(req.body);
     const savedProduct = await product.save();
@@ -41,7 +42,7 @@ router.post("/", async (req, res) => {
 });
 
 // Update product
-router.put("/:id", async (req, res) => {
+router.put("/:id", protect, adminOnly, async (req, res) => {
   try {
     const product = await Product.findByIdAndUpdate(
       req.params.id,
@@ -60,7 +61,7 @@ router.put("/:id", async (req, res) => {
 });
 
 // Delete product
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", protect, adminOnly, async (req, res) => {
   try {
     const product = await Product.findByIdAndDelete(req.params.id);
 
