@@ -1,41 +1,59 @@
-import { FiShoppingCart, FiUser } from "react-icons/fi";
+
 import { Link } from "react-router-dom";
+import { FiShoppingCart, FiUser, FiSearch } from "react-icons/fi";
 
 function Navbar() {
   return (
-    <nav className="bg-gray-900 text-white px-6 py-4">
-      <div className="max-w-7xl mx-auto flex items-center justify-between">
+    <nav className="bg-white border-b">
+      <div className="max-w-7xl mx-auto px-6 py-4">
+        <div className="flex items-center justify-between">
 
-        <h1 className="text-2xl font-bold">
-          ShopEase
-        </h1>
+          {/* Logo */}
+          <Link to="/" className="text-2xl font-bold text-gray-900">
+            ShopEase
+          </Link>
 
-        <div className="flex items-center gap-6">
-          <a href="/" className="hover:text-gray-300">
-            Home
-          </a>
+          {/* Navigation Links */}
+          <div className="hidden md:flex items-center gap-8">
+            <Link
+              to="/"
+              className="text-gray-700 hover:text-gray-900"
+            >
+              Home
+            </Link>
 
-          <a href="/products" className="hover:text-gray-300">
-            Products
-          </a>
+            <Link
+              to="/products"
+              className="text-gray-700 hover:text-gray-900"
+            >
+              Products
+            </Link>
+          </div>
 
-          <a
-            href="/cart"
-            className="flex items-center gap-1 hover:text-gray-300"
-          >
-            <FiShoppingCart />
-            Cart
-          </a>
+          {/* Search + Icons */}
+          <div className="flex items-center gap-5">
 
-          <a
-            href="/login"
-            className="flex items-center gap-1 hover:text-gray-300"
-          >
-            <FiUser />
-            Login
-          </a>
+            <button className="text-gray-700 hover:text-gray-900">
+              <FiSearch size={20} />
+            </button>
+
+            <Link
+              to="/cart"
+              className="text-gray-700 hover:text-gray-900"
+            >
+              <FiShoppingCart size={20} />
+            </Link>
+
+            <Link
+              to="/login"
+              className="text-gray-700 hover:text-gray-900"
+            >
+              <FiUser size={20} />
+            </Link>
+
+          </div>
+
         </div>
-
       </div>
     </nav>
   );
