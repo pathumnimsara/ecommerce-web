@@ -16,6 +16,7 @@ function Checkout() {
   });
 
   const [error, setError] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("cod");
 
   const subtotal = cartItems.reduce(
     (total, item) => total + item.price * item.quantity,
@@ -25,7 +26,6 @@ function Checkout() {
   const shipping = cartItems.length > 0 ? 5 : 0;
   const total = subtotal + shipping;
 
-  // Handle input changes
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -33,7 +33,6 @@ function Checkout() {
     });
   };
 
-  // Validate form
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -47,15 +46,22 @@ function Checkout() {
     }
 
     setError("");
-    alert("Order placed successfully!");
+
+    const paymentNames = {
+      cod: "Cash on Delivery",
+      card: "Credit / Debit Card",
+      bank: "Bank Transfer",
+    };
+
+    alert(
+      `Order placed successfully!\nPayment Method: ${paymentNames[paymentMethod]}`
+    );
   };
 
-  // Empty cart
   if (cartItems.length === 0) {
     return (
       <main className="py-16">
         <div className="max-w-4xl mx-auto px-6 text-center">
-
           <h1 className="text-3xl font-bold">
             Your cart is empty
           </h1>
@@ -70,7 +76,6 @@ function Checkout() {
           >
             Browse Products
           </Link>
-
         </div>
       </main>
     );
@@ -79,26 +84,19 @@ function Checkout() {
   return (
     <main className="py-12">
       <div className="max-w-6xl mx-auto px-6">
-
         <h1 className="text-3xl font-bold mb-8">
           Checkout
         </h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-          {/* Customer Information */}
-
           <form
             id="checkout-form"
             onSubmit={handleSubmit}
             className="lg:col-span-2 border rounded-xl p-6"
           >
-
             <h2 className="text-xl font-bold mb-6">
               Customer Information
             </h2>
-
-            {/* Error Message */}
 
             {error && (
               <p className="mb-5 text-red-600 bg-red-50 p-3 rounded-lg">
@@ -107,9 +105,6 @@ function Checkout() {
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-
-              {/* First Name */}
-
               <div>
                 <label className="block text-sm font-medium mb-2">
                   First Name
@@ -124,8 +119,6 @@ function Checkout() {
                   className="w-full border rounded-lg px-4 py-3"
                 />
               </div>
-
-              {/* Last Name */}
 
               <div>
                 <label className="block text-sm font-medium mb-2">
@@ -142,8 +135,6 @@ function Checkout() {
                 />
               </div>
 
-              {/* Email */}
-
               <div>
                 <label className="block text-sm font-medium mb-2">
                   Email
@@ -158,8 +149,6 @@ function Checkout() {
                   className="w-full border rounded-lg px-4 py-3"
                 />
               </div>
-
-              {/* Phone */}
 
               <div>
                 <label className="block text-sm font-medium mb-2">
@@ -176,8 +165,6 @@ function Checkout() {
                 />
               </div>
 
-              {/* Address */}
-
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium mb-2">
                   Address
@@ -192,8 +179,6 @@ function Checkout() {
                   className="w-full border rounded-lg px-4 py-3"
                 />
               </div>
-
-              {/* City */}
 
               <div>
                 <label className="block text-sm font-medium mb-2">
@@ -210,8 +195,6 @@ function Checkout() {
                 />
               </div>
 
-              {/* Postal Code */}
-
               <div>
                 <label className="block text-sm font-medium mb-2">
                   Postal Code
@@ -226,27 +209,96 @@ function Checkout() {
                   className="w-full border rounded-lg px-4 py-3"
                 />
               </div>
-
             </div>
 
+            {/* Payment Method */}
+            <div className="mt-8 border-t pt-6">
+              <h2 className="text-xl font-bold mb-5">
+                Payment Method
+              </h2>
+
+              <div className="space-y-3">
+                <label className="flex items-center gap-3 border rounded-lg p-4 cursor-pointer hover:bg-gray-50">
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="cod"
+                    checked={paymentMethod === "cod"}
+                    onChange={(e) =>
+                      setPaymentMethod(e.target.value)
+                    }
+                  />
+
+                  <div>
+                    <p className="font-medium">
+                      Cash on Delivery
+                    </p>
+
+                    <p className="text-sm text-gray-500">
+                      Pay when your order arrives
+                    </p>
+                  </div>
+                </label>
+
+                <label className="flex items-center gap-3 border rounded-lg p-4 cursor-pointer hover:bg-gray-50">
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="card"
+                    checked={paymentMethod === "card"}
+                    onChange={(e) =>
+                      setPaymentMethod(e.target.value)
+                    }
+                  />
+
+                  <div>
+                    <p className="font-medium">
+                      Credit / Debit Card
+                    </p>
+
+                    <p className="text-sm text-gray-500">
+                      Pay securely using your card
+                    </p>
+                  </div>
+                </label>
+
+                <label className="flex items-center gap-3 border rounded-lg p-4 cursor-pointer hover:bg-gray-50">
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="bank"
+                    checked={paymentMethod === "bank"}
+                    onChange={(e) =>
+                      setPaymentMethod(e.target.value)
+                    }
+                  />
+
+                  <div>
+                    <p className="font-medium">
+                      Bank Transfer
+                    </p>
+
+                    <p className="text-sm text-gray-500">
+                      Pay through a bank transfer
+                    </p>
+                  </div>
+                </label>
+              </div>
+            </div>
           </form>
 
           {/* Order Summary */}
-
           <div className="border rounded-xl p-6 h-fit">
-
             <h2 className="text-xl font-bold mb-6">
               Order Summary
             </h2>
 
             <div className="space-y-4">
-
               {cartItems.map((item) => (
                 <div
                   key={item.id}
-                  className="flex justify-between"
+                  className="flex justify-between gap-4"
                 >
-
                   <div>
                     <p className="font-medium">
                       {item.name}
@@ -260,34 +312,35 @@ function Checkout() {
                   <p className="font-medium">
                     ${(item.price * item.quantity).toFixed(2)}
                   </p>
-
                 </div>
               ))}
-
             </div>
 
-            {/* Totals */}
-
             <div className="border-t mt-6 pt-4 space-y-3">
-
               <div className="flex justify-between">
                 <span>Subtotal</span>
-                <span>${subtotal.toFixed(2)}</span>
+
+                <span>
+                  ${subtotal.toFixed(2)}
+                </span>
               </div>
 
               <div className="flex justify-between">
                 <span>Shipping</span>
-                <span>${shipping.toFixed(2)}</span>
+
+                <span>
+                  ${shipping.toFixed(2)}
+                </span>
               </div>
 
               <div className="border-t pt-4 flex justify-between text-lg font-bold">
                 <span>Total</span>
-                <span>${total.toFixed(2)}</span>
+
+                <span>
+                  ${total.toFixed(2)}
+                </span>
               </div>
-
             </div>
-
-            {/* Place Order */}
 
             <button
               type="submit"
@@ -296,9 +349,7 @@ function Checkout() {
             >
               Place Order
             </button>
-
           </div>
-
         </div>
       </div>
     </main>
