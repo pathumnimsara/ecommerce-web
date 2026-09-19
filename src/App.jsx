@@ -1,6 +1,7 @@
 
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
+import Checkout from "./pages/Checkout";
 
 import Home from "./pages/Home";
 import Products from "./pages/Products";
@@ -22,6 +23,8 @@ function App() {
           <Route path="/products/:id" element={<ProductDetails />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/checkout" element={<Checkout />} />
+          
         </Routes>
       </BrowserRouter>
     </CartProvider>

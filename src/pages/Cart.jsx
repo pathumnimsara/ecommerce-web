@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 
 function Cart() {
@@ -108,9 +109,12 @@ function Cart() {
                 <span>${total.toFixed(2)}</span>
               </div>
 
-              <button className="w-full mt-6 bg-gray-900 text-white py-3 rounded-lg hover:bg-gray-700">
-                Proceed to Checkout
-              </button>
+              <Link
+  to="/checkout"
+  className="block text-center w-full mt-6 bg-gray-900 text-white py-3 rounded-lg hover:bg-gray-700"
+>
+  Proceed to Checkout
+</Link>
             </div>
 
           </div>
