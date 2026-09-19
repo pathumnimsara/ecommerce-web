@@ -28,6 +28,53 @@ function AdminProducts() {
     },
   ]);
 
+  const [showForm, setShowForm] = useState(false);
+
+  const [formData, setFormData] = useState({
+    name: "",
+    price: "",
+    category: "Electronics",
+  });
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleAddProduct = (e) => {
+    e.preventDefault();
+
+    if (
+      !formData.name ||
+      !formData.price ||
+      !formData.category
+    ) {
+      alert("Please fill in all fields.");
+      return;
+    }
+
+    const newProduct = {
+      id: products.length > 0
+        ? Math.max(...products.map((product) => product.id)) + 1
+        : 1,
+      name: formData.name,
+      price: Number(formData.price),
+      category: formData.category,
+    };
+
+    setProducts([...products, newProduct]);
+
+    setFormData({
+      name: "",
+      price: "",
+      category: "Electronics",
+    });
+
+    setShowForm(false);
+  };
+
   const handleDelete = (id) => {
     const confirmed = window.confirm(
       "Are you sure you want to delete this product?"
@@ -54,10 +101,100 @@ function AdminProducts() {
             </p>
           </div>
 
-          <button className="bg-gray-900 text-white px-5 py-3 rounded-lg hover:bg-gray-700">
-            + Add Product
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className="bg-gray-900 text-white px-5 py-3 rounded-lg hover:bg-gray-700"
+          >
+            {showForm ? "Close Form" : "+ Add Product"}
           </button>
         </div>
+
+        {showForm && (
+          <div className="bg-white border rounded-xl p-6 mb-8">
+            <h2 className="text-xl font-bold mb-6">
+              Add New Product
+            </h2>
+
+            <form
+              onSubmit={handleAddProduct}
+              className="grid grid-cols-1 md:grid-cols-3 gap-5"
+            >
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Product Name
+                </label>
+
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  placeholder="Enter product name"
+                  className="w-full border rounded-lg px-4 py-3"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Price
+                </label>
+
+                <input
+                  type="number"
+                  name="price"
+                  value={formData.price}
+                  onChange={handleChange}
+                  placeholder="Enter price"
+                  min="0"
+                  step="0.01"
+                  className="w-full border rounded-lg px-4 py-3"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Category
+                </label>
+
+                <select
+                  name="category"
+                  value={formData.category}
+                  onChange={handleChange}
+                  className="w-full border rounded-lg px-4 py-3 bg-white"
+                >
+                  <option value="Electronics">
+                    Electronics
+                  </option>
+
+                  <option value="Accessories">
+                    Accessories
+                  </option>
+
+                  <option value="Fashion">
+                    Fashion
+                  </option>
+
+                  <option value="Home & Living">
+                    Home & Living
+                  </option>
+
+                  <option value="Beauty">
+                    Beauty
+                  </option>
+                </select>
+              </div>
+
+              <div className="md:col-span-3">
+                <button
+                  type="submit"
+                  className="bg-gray-900 text-white px-6 py-3 rounded-lg hover:bg-gray-700"
+                >
+                  Add Product
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
 
         <div className="bg-white border rounded-xl overflow-hidden">
           <div className="overflow-x-auto">
