@@ -1,7 +1,9 @@
 
 import { Link } from "react-router-dom";
+import { useCart } from "../context/CartContext";
 
 function Products() {
+    const { addToCart } = useCart();
   const products = [
     {
       id: 1,
@@ -107,11 +109,13 @@ function Products() {
                   ${product.price}
                 </p>
 
-                <button
-                  className="w-full mt-4 bg-gray-900 text-white py-2 rounded-lg hover:bg-gray-700"
-                >
-                  Add to Cart
-                </button>
+                {/* Add to Cart */}
+<button
+  onClick={() => addToCart(product)}
+  className="w-full mt-4 bg-gray-900 text-white py-2 rounded-lg hover:bg-gray-700"
+>
+  Add to Cart
+</button>
 
               </div>
             </div>
