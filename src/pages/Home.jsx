@@ -1,6 +1,25 @@
 import { Link } from "react-router-dom";
 
 function Home() {
+  const categories = [
+    {
+      name: "Electronics",
+      description: "Phones, laptops and gadgets",
+    },
+    {
+      name: "Fashion",
+      description: "Clothing, shoes and accessories",
+    },
+    {
+      name: "Home & Living",
+      description: "Products for your home",
+    },
+    {
+      name: "Beauty",
+      description: "Beauty and personal care",
+    },
+  ];
+
   return (
     <main>
       {/* Hero Section */}
@@ -31,6 +50,47 @@ function Home() {
             </Link>
 
           </div>
+        </div>
+      </section>
+
+      {/* Categories Section */}
+      <section className="py-16">
+        <div className="max-w-7xl mx-auto px-6">
+
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-bold">
+              Shop by Category
+            </h2>
+
+            <p className="text-gray-600 mt-2">
+              Find what you need from our popular categories
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {categories.map((category) => (
+              <div
+                key={category.name}
+                className="border rounded-xl p-6 hover:shadow-lg transition"
+              >
+                <h3 className="text-xl font-semibold">
+                  {category.name}
+                </h3>
+
+                <p className="text-gray-600 mt-2">
+                  {category.description}
+                </p>
+
+                <Link
+                  to="/products"
+                  className="inline-block mt-5 font-semibold hover:underline"
+                >
+                  Explore →
+                </Link>
+              </div>
+            ))}
+          </div>
+
         </div>
       </section>
     </main>
