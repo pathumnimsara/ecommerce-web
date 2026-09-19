@@ -1,31 +1,35 @@
-import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
+import api from "../services/api";
 
 function Checkout() {
-  const { cartItems } = useCart();
   const navigate = useNavigate();
+  const { cartItems } = useCart();
+  const { user } = useAuth();
 
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
+    firstName: user?.firstName || "",
+    lastName: user?.lastName || "",
+    email: user?.email || "",
     address: "",
     city: "",
-    postalCode: "",
+    phone: "",
   });
 
+  const [paymentMethod, setPaymentMethod] = useState("COD");
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("cod");
 
-  const subtotal = cartItems.reduce(
-    (total, item) => total + item.price * item.quantity,
+  const getProductId = (product) => {
+    return product._id || product.id;
+  };
+
+  const total = cartItems.reduce(
+    (sum, item) => sum + item.price * item.quantity,
     0
   );
-
-  const shipping = cartItems.length > 0 ? 5 : 0;
-  const total = subtotal + shipping;
 
   const handleChange = (e) => {
     setFormData({
@@ -34,268 +38,211 @@ function Checkout() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const hasEmptyField = Object.values(formData).some(
-      (value) => value.trim() === ""
-    );
-
-    if (hasEmptyField) {
-      setError("Please fill in all fields.");
-      return;
-    }
 
     setError("");
 
-    const paymentNames = {
-      cod: "Cash on Delivery",
-      card: "Credit / Debit Card",
-      bank: "Bank Transfer",
-    };
+    if (!user) {
+      navigate("/login");
+      return;
+    }
 
-    navigate("/order-success");
+    if (cartItems.length === 0) {
+      setError("Your cart is empty.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const orderItems = cartItems.map((item) => ({
+        product: getProductId(item),
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        image: item.image || "",
+      }));
+
+      await api.post(
+        "/orders",
+        {
+          items: orderItems,
+          customer: formData,
+          paymentMethod,
+          total,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      navigate("/order-success");
+    } catch (error) {
+      setError(
+        error.response?.data?.message ||
+          "Failed to place order. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
-  if (cartItems.length === 0) {
-    return (
-      <main className="py-16">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <h1 className="text-3xl font-bold">
-            Your cart is empty
-          </h1>
-
-          <p className="text-gray-600 mt-3">
-            Add some products before checking out.
-          </p>
-
-          <Link
-            to="/products"
-            className="inline-block mt-6 bg-gray-900 text-white px-6 py-3 rounded-lg hover:bg-gray-700"
-          >
-            Browse Products
-          </Link>
-        </div>
-      </main>
-    );
-  }
-
   return (
-    <main className="py-12">
-      <div className="max-w-6xl mx-auto px-6">
-        <h1 className="text-3xl font-bold mb-8">
+    <div className="bg-gray-50 min-h-screen py-10">
+      <div className="max-w-5xl mx-auto px-4">
+
+        <h1 className="text-3xl font-bold text-gray-800 mb-8">
           Checkout
         </h1>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <form
-            id="checkout-form"
-            onSubmit={handleSubmit}
-            className="lg:col-span-2 border rounded-xl p-6"
-          >
-            <h2 className="text-xl font-bold mb-6">
-              Customer Information
+        {error && (
+          <div className="bg-red-50 text-red-600 px-4 py-3 rounded-lg mb-6">
+            {error}
+          </div>
+        )}
+
+        <form
+          onSubmit={handleSubmit}
+          className="grid grid-cols-1 lg:grid-cols-3 gap-8"
+        >
+
+          {/* Customer Details */}
+          <div className="lg:col-span-2 bg-white rounded-xl shadow-sm p-6">
+
+            <h2 className="text-xl font-semibold mb-5">
+              Delivery Information
             </h2>
 
-            {error && (
-              <p className="mb-5 text-red-600 bg-red-50 p-3 rounded-lg">
-                {error}
-              </p>
-            )}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  First Name
-                </label>
+              <input
+                type="text"
+                name="firstName"
+                placeholder="First name"
+                value={formData.firstName}
+                onChange={handleChange}
+                required
+                className="border rounded-lg px-4 py-3"
+              />
 
-                <input
-                  type="text"
-                  name="firstName"
-                  value={formData.firstName}
-                  onChange={handleChange}
-                  placeholder="Enter first name"
-                  className="w-full border rounded-lg px-4 py-3"
-                />
-              </div>
+              <input
+                type="text"
+                name="lastName"
+                placeholder="Last name"
+                value={formData.lastName}
+                onChange={handleChange}
+                required
+                className="border rounded-lg px-4 py-3"
+              />
 
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Last Name
-                </label>
-
-                <input
-                  type="text"
-                  name="lastName"
-                  value={formData.lastName}
-                  onChange={handleChange}
-                  placeholder="Enter last name"
-                  className="w-full border rounded-lg px-4 py-3"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Email
-                </label>
-
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="Enter email"
-                  className="w-full border rounded-lg px-4 py-3"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Phone
-                </label>
-
-                <input
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  placeholder="Enter phone number"
-                  className="w-full border rounded-lg px-4 py-3"
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium mb-2">
-                  Address
-                </label>
-
-                <input
-                  type="text"
-                  name="address"
-                  value={formData.address}
-                  onChange={handleChange}
-                  placeholder="Enter delivery address"
-                  className="w-full border rounded-lg px-4 py-3"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  City
-                </label>
-
-                <input
-                  type="text"
-                  name="city"
-                  value={formData.city}
-                  onChange={handleChange}
-                  placeholder="Enter city"
-                  className="w-full border rounded-lg px-4 py-3"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Postal Code
-                </label>
-
-                <input
-                  type="text"
-                  name="postalCode"
-                  value={formData.postalCode}
-                  onChange={handleChange}
-                  placeholder="Enter postal code"
-                  className="w-full border rounded-lg px-4 py-3"
-                />
-              </div>
             </div>
 
-            {/* Payment Method */}
-            <div className="mt-8 border-t pt-6">
-              <h2 className="text-xl font-bold mb-5">
-                Payment Method
-              </h2>
+            <input
+              type="email"
+              name="email"
+              placeholder="Email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              className="w-full border rounded-lg px-4 py-3 mt-4"
+            />
 
-              <div className="space-y-3">
-                <label className="flex items-center gap-3 border rounded-lg p-4 cursor-pointer hover:bg-gray-50">
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    value="cod"
-                    checked={paymentMethod === "cod"}
-                    onChange={(e) =>
-                      setPaymentMethod(e.target.value)
-                    }
-                  />
+            <input
+              type="text"
+              name="address"
+              placeholder="Delivery address"
+              value={formData.address}
+              onChange={handleChange}
+              required
+              className="w-full border rounded-lg px-4 py-3 mt-4"
+            />
 
-                  <div>
-                    <p className="font-medium">
-                      Cash on Delivery
-                    </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
 
-                    <p className="text-sm text-gray-500">
-                      Pay when your order arrives
-                    </p>
-                  </div>
-                </label>
+              <input
+                type="text"
+                name="city"
+                placeholder="City"
+                value={formData.city}
+                onChange={handleChange}
+                required
+                className="border rounded-lg px-4 py-3"
+              />
 
-                <label className="flex items-center gap-3 border rounded-lg p-4 cursor-pointer hover:bg-gray-50">
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    value="card"
-                    checked={paymentMethod === "card"}
-                    onChange={(e) =>
-                      setPaymentMethod(e.target.value)
-                    }
-                  />
+              <input
+                type="tel"
+                name="phone"
+                placeholder="Phone number"
+                value={formData.phone}
+                onChange={handleChange}
+                required
+                className="border rounded-lg px-4 py-3"
+              />
 
-                  <div>
-                    <p className="font-medium">
-                      Credit / Debit Card
-                    </p>
-
-                    <p className="text-sm text-gray-500">
-                      Pay securely using your card
-                    </p>
-                  </div>
-                </label>
-
-                <label className="flex items-center gap-3 border rounded-lg p-4 cursor-pointer hover:bg-gray-50">
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    value="bank"
-                    checked={paymentMethod === "bank"}
-                    onChange={(e) =>
-                      setPaymentMethod(e.target.value)
-                    }
-                  />
-
-                  <div>
-                    <p className="font-medium">
-                      Bank Transfer
-                    </p>
-
-                    <p className="text-sm text-gray-500">
-                      Pay through a bank transfer
-                    </p>
-                  </div>
-                </label>
-              </div>
             </div>
-          </form>
+
+            {/* Payment */}
+            <h2 className="text-xl font-semibold mt-8 mb-5">
+              Payment Method
+            </h2>
+
+            <div className="space-y-3">
+
+              <label className="flex items-center gap-3 border rounded-lg p-4 cursor-pointer">
+                <input
+                  type="radio"
+                  value="COD"
+                  checked={paymentMethod === "COD"}
+                  onChange={(e) =>
+                    setPaymentMethod(e.target.value)
+                  }
+                />
+                <span>Cash on Delivery</span>
+              </label>
+
+              <label className="flex items-center gap-3 border rounded-lg p-4 cursor-pointer">
+                <input
+                  type="radio"
+                  value="Card"
+                  checked={paymentMethod === "Card"}
+                  onChange={(e) =>
+                    setPaymentMethod(e.target.value)
+                  }
+                />
+                <span>Card Payment</span>
+              </label>
+
+              <label className="flex items-center gap-3 border rounded-lg p-4 cursor-pointer">
+                <input
+                  type="radio"
+                  value="Bank Transfer"
+                  checked={paymentMethod === "Bank Transfer"}
+                  onChange={(e) =>
+                    setPaymentMethod(e.target.value)
+                  }
+                />
+                <span>Bank Transfer</span>
+              </label>
+
+            </div>
+
+          </div>
 
           {/* Order Summary */}
-          <div className="border rounded-xl p-6 h-fit">
-            <h2 className="text-xl font-bold mb-6">
+          <div className="bg-white rounded-xl shadow-sm p-6 h-fit">
+
+            <h2 className="text-xl font-semibold mb-5">
               Order Summary
             </h2>
 
             <div className="space-y-4">
+
               {cartItems.map((item) => (
                 <div
-                  key={item.id}
+                  key={getProductId(item)}
                   className="flex justify-between gap-4"
                 >
                   <div>
@@ -313,45 +260,27 @@ function Checkout() {
                   </p>
                 </div>
               ))}
+
             </div>
 
-            <div className="border-t mt-6 pt-4 space-y-3">
-              <div className="flex justify-between">
-                <span>Subtotal</span>
-
-                <span>
-                  ${subtotal.toFixed(2)}
-                </span>
-              </div>
-
-              <div className="flex justify-between">
-                <span>Shipping</span>
-
-                <span>
-                  ${shipping.toFixed(2)}
-                </span>
-              </div>
-
-              <div className="border-t pt-4 flex justify-between text-lg font-bold">
-                <span>Total</span>
-
-                <span>
-                  ${total.toFixed(2)}
-                </span>
-              </div>
+            <div className="border-t mt-6 pt-4 flex justify-between text-lg font-bold">
+              <span>Total</span>
+              <span>${total.toFixed(2)}</span>
             </div>
 
             <button
               type="submit"
-              form="checkout-form"
-              className="w-full mt-6 bg-gray-900 text-white py-3 rounded-lg hover:bg-gray-700"
+              disabled={loading}
+              className="w-full bg-black text-white py-3 rounded-lg mt-6 hover:bg-gray-800 disabled:bg-gray-400"
             >
-              Place Order
+              {loading ? "Placing Order..." : "Place Order"}
             </button>
+
           </div>
-        </div>
+
+        </form>
       </div>
-    </main>
+    </div>
   );
 }
 

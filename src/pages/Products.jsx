@@ -8,6 +8,7 @@ function Products() {
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -17,10 +18,19 @@ function Products() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
+        setLoading(true);
+        setError("");
+
         const response = await api.get("/products");
+
         setProducts(response.data);
       } catch (error) {
         console.error("Failed to load products:", error);
+
+        setError(
+          error.response?.data?.message ||
+            "Failed to connect to the server."
+        );
       } finally {
         setLoading(false);
       }
@@ -58,7 +68,9 @@ function Products() {
   }
 
   if (sortOption === "name") {
-    filteredProducts.sort((a, b) => a.name.localeCompare(b.name));
+    filteredProducts.sort((a, b) =>
+      a.name.localeCompare(b.name)
+    );
   }
 
   return (
@@ -78,7 +90,6 @@ function Products() {
 
         {/* Filters */}
         <div className="bg-white p-5 rounded-xl shadow-sm mb-8">
-
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
             {/* Search */}
@@ -93,7 +104,9 @@ function Products() {
             {/* Category */}
             <select
               value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
+              onChange={(e) =>
+                setSelectedCategory(e.target.value)
+              }
               className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               {categories.map((category) => (
@@ -106,13 +119,21 @@ function Products() {
             {/* Sort */}
             <select
               value={sortOption}
-              onChange={(e) => setSortOption(e.target.value)}
+              onChange={(e) =>
+                setSortOption(e.target.value)
+              }
               className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Sort By</option>
-              <option value="price-low">Price: Low to High</option>
-              <option value="price-high">Price: High to Low</option>
-              <option value="name">Name: A-Z</option>
+              <option value="price-low">
+                Price: Low to High
+              </option>
+              <option value="price-high">
+                Price: High to Low
+              </option>
+              <option value="name">
+                Name: A-Z
+              </option>
             </select>
 
           </div>
@@ -125,6 +146,26 @@ function Products() {
               Loading products...
             </p>
           </div>
+
+        ) : error ? (
+          /* Backend Error */
+          <div className="text-center py-16">
+            <h2 className="text-xl font-semibold text-red-600">
+              {error}
+            </h2>
+
+            <p className="text-gray-500 mt-2">
+              Please make sure the backend server is running.
+            </p>
+
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-5 bg-black text-white px-5 py-2 rounded-lg hover:bg-gray-800"
+            >
+              Try Again
+            </button>
+          </div>
+
         ) : filteredProducts.length === 0 ? (
           /* No Products */
           <div className="text-center py-16">
@@ -136,6 +177,7 @@ function Products() {
               Try another search or category.
             </p>
           </div>
+
         ) : (
           /* Product Grid */
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -172,7 +214,9 @@ function Products() {
                     {product.category}
                   </p>
 
-                  <Link to={`/products/${product._id}`}>
+                  <Link
+                    to={`/products/${product._id}`}
+                  >
                     <h2 className="text-lg font-semibold text-gray-800 hover:text-blue-600">
                       {product.name}
                     </h2>
