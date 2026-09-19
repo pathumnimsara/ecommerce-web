@@ -7,6 +7,7 @@ import OrderSuccess from "./pages/OrderSuccess";
 import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminProducts from "./pages/admin/AdminProducts";
+import AdminOrders from "./pages/admin/AdminOrders";
 
 import Home from "./pages/Home";
 import Products from "./pages/Products";
@@ -39,6 +40,10 @@ function App() {
 <Route
   path="/admin/products"
   element={<AdminProducts />}
+/>
+<Route
+  path="/admin/orders"
+  element={<AdminOrders />}
 />
 
 
