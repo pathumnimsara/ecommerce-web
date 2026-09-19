@@ -9,6 +9,8 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminProducts from "./pages/admin/AdminProducts";
 import AdminOrders from "./pages/admin/AdminOrders";
 import AdminUsers from "./pages/admin/AdminUsers";
+import { AuthProvider } from "./context/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 import Home from "./pages/Home";
 import Products from "./pages/Products";
@@ -20,6 +22,7 @@ import { CartProvider } from "./context/CartContext";
 
 function App() {
   return (
+    <AuthProvider>
     <CartProvider>
       <BrowserRouter>
         <Navbar />
@@ -34,27 +37,47 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/order-success" element={<OrderSuccess />} />
           <Route path="*" element={<NotFound />} />
-          <Route
+         <Route
   path="/admin"
-  element={<AdminDashboard />}
+  element={
+    <ProtectedRoute adminOnly>
+      <AdminDashboard />
+    </ProtectedRoute>
+  }
 />
+
 <Route
   path="/admin/products"
-  element={<AdminProducts />}
+  element={
+    <ProtectedRoute adminOnly>
+      <AdminProducts />
+    </ProtectedRoute>
+  }
 />
+
 <Route
   path="/admin/orders"
-  element={<AdminOrders />}
+  element={
+    <ProtectedRoute adminOnly>
+      <AdminOrders />
+    </ProtectedRoute>
+  }
 />
+
 <Route
   path="/admin/users"
-  element={<AdminUsers />}
+  element={
+    <ProtectedRoute adminOnly>
+      <AdminUsers />
+    </ProtectedRoute>
+  }
 />
 
 
         </Routes>
       </BrowserRouter>
     </CartProvider>
+    </AuthProvider>
   );
 }
 
